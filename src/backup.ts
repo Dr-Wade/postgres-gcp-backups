@@ -5,7 +5,7 @@ import { createReadStream } from "fs";
 import { env } from "./env";
 
 const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
-  console.log("Uploading backup to S3...");
+  console.log("Uploading backup to GCP...");
 
   const projectId = env.GCP_PROJECT_ID;
   const clientEmail = env.GCP_CLIENT_EMAIL;
@@ -51,9 +51,14 @@ const dumpToFile = async (path: string) => {
 export const backup = async () => {
   console.log("Initiating DB backup...")
 
-  let date = new Date().toISOString()
-  const timestamp = date.replace(/[:.]+/g, '-')
-  const filename = `backup-${timestamp}.tar.gz`
+  var filename = 'backup.tar.gz'
+  
+  if (!env.GCP_USE_VERSIONING) {
+    let date = new Date().toISOString()
+    const timestamp = date.replace(/[:.]+/g, '-')
+    filename = `backup-${timestamp}.tar.gz`
+  }
+
   const filepath = `/tmp/${filename}`
 
   await dumpToFile(filepath)
