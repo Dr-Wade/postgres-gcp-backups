@@ -1,34 +1,31 @@
 import { exec } from "child_process";
-import { PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { Storage } from "@google-cloud/storage";
 import { createReadStream } from "fs";
 
 import { env } from "./env";
 
-const uploadToS3 = async ({ name, path }: {name: string, path: string}) => {
+const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
   console.log("Uploading backup to S3...");
 
-  const bucket = env.AWS_S3_BUCKET;
+  const projectId = env.GCP_PROJECT_ID;
+  const clientEmail = env.GCP_CLIENT_EMAIL;
+  const privateKey = env.GCP_PRIVATE_KEY;
+  const bucketName = env.GCP_BUCKET_NAME;
 
-  const clientOptions: S3ClientConfig = {
-    region: env.AWS_S3_REGION,
-  }
+  const storage = new Storage({ 
+    projectId, 
+    credentials: {
+      client_email: clientEmail,
+      private_key: privateKey,
+    }
+  });
 
-  if (env.AWS_S3_ENDPOINT) {
-    console.log(`Using custom endpoint: ${env.AWS_S3_ENDPOINT}`)
-    clientOptions['endpoint'] = env.AWS_S3_ENDPOINT;
-  }
-
-  const client = new S3Client(clientOptions);
-
-  await client.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: name,
-      Body: createReadStream(path),
-    })
-  )
-
-  console.log("Backup uploaded to S3...");
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(name);
+  createReadStream(path).pipe(file.createWriteStream())
+    .on('finish', () => {
+      console.log("Backup uploaded to S3...");
+    });
 }
 
 const dumpToFile = async (path: string) => {
@@ -60,7 +57,7 @@ export const backup = async () => {
   const filepath = `/tmp/${filename}`
 
   await dumpToFile(filepath)
-  await uploadToS3({name: filename, path: filepath})
+  await uploadToGCP({name: filename, path: filepath})
 
   console.log("DB backup complete...")
 }
