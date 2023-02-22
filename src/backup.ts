@@ -16,7 +16,7 @@ const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
     projectId, 
     credentials: {
       client_email: clientEmail,
-      private_key: privateKey,
+      private_key: privateKey.replace(/\\n/g, "\n")
     }
   });
 
@@ -24,7 +24,7 @@ const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
   const file = bucket.file(name);
   createReadStream(path).pipe(file.createWriteStream())
     .on('finish', () => {
-      console.log("Backup uploaded to S3...");
+      console.log("Backup uploaded to GCP...");
     });
 }
 
