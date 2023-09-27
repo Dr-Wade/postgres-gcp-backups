@@ -6,6 +6,11 @@ export const env = envsafe({
   GCP_PRIVATE_KEY: str(),
   GCP_BUCKET_NAME: str(),
   GCP_USE_VERSIONING: bool(),
+  BACKUP_FILE_PREFIX: str({
+    desc: 'The prefix for the backup file',
+    default: '',
+    allowEmpty: true,
+  }),
   BACKUP_DATABASE_URL: str({
     desc: 'The connection string of the database to backup.'
   }),

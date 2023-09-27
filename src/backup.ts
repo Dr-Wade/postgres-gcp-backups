@@ -50,9 +50,8 @@ const dumpToFile = async (path: string) => {
 
 export const backup = async () => {
   console.log("Initiating DB backup...")
-
   var filename = 'backup.tar.gz'
-  
+  if (env.BACKUP_FILE_PREFIX) filename = env.BACKUP_FILE_PREFIX + '-' + filename
   if (!env.GCP_USE_VERSIONING) {
     let date = new Date().toISOString()
     const timestamp = date.replace(/[:.]+/g, '-')
