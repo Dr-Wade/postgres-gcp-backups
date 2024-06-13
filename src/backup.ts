@@ -6,7 +6,6 @@ import { env } from "./env";
 
 const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
   console.log("Uploading backup to GCP...");
-
   const projectId = env.GCP_PROJECT_ID;
   const clientEmail = env.GCP_CLIENT_EMAIL;
   const privateKey = env.GCP_PRIVATE_KEY;
@@ -30,7 +29,6 @@ const uploadToGCP = async ({ name, path }: {name: string, path: string}) => {
 
 const dumpToFile = async (path: string) => {
   console.log("Dumping DB to file...");
-
   await new Promise((resolve, reject) => {
     exec(
       `pg_dump ${env.BACKUP_DATABASE_URL} -F t | gzip > ${path}`,
@@ -50,12 +48,12 @@ const dumpToFile = async (path: string) => {
 
 export const backup = async () => {
   console.log("Initiating DB backup...")
-  var filename = 'backup.tar.gz'
+  var filename = 'backup.gz'
   if (env.BACKUP_FILE_PREFIX) filename = env.BACKUP_FILE_PREFIX + '-' + filename
   if (!env.GCP_USE_VERSIONING) {
     let date = new Date().toISOString()
     const timestamp = date.replace(/[:.]+/g, '-')
-    filename = `backup-${timestamp}.tar.gz`
+    filename = `backup-${timestamp}.gz`
   }
 
   const filepath = `/tmp/${filename}`
